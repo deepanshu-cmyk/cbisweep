@@ -5,6 +5,9 @@ import logoOptivate from '../assets/logo-optivate.webp';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { faqItems } from '../constants';
 
+// API endpoint constant
+const API_ENDPOINT = 'https://0gt6s4bqo5.execute-api.us-east-1.amazonaws.com/prod/create-support-request';
+
 export default function Faq() {
     const [openQuestion, setOpenQuestion] = useState(null);
     const [formData, setFormData] = useState({
@@ -12,6 +15,8 @@ export default function Faq() {
         email: '',
         question: ''
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     const toggleQuestion = (id) => {
         setOpenQuestion(openQuestion === id ? null : id);
@@ -25,20 +30,64 @@ export default function Faq() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Log form data to console
-        console.log("Form submitted with data:", formData);
 
-        // Clear the form
-        setFormData({
-            name: '',
-            email: '',
-            question: ''
-        });
+        // Start submission
+        setIsSubmitting(true);
 
-        // Optional: Show success message
-        alert("Thank you for your question! We'll be in touch soon.");
+        try {
+            // Prepare API data
+            const apiData = {
+                email: formData.email,
+                name: formData.name,
+                question: formData.question,
+                origin: {
+                    source: 'website',
+                    page: window.location.pathname,
+                    utm_campaign: 'faq_support_form'
+                }
+            };
+
+            console.log("Submitting to API:", apiData);
+
+            // Submit to API
+            const response = await fetch(API_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(apiData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
+            }
+
+            const responseData = await response.json();
+            console.log("API Response:", responseData);
+
+            // Clear the form
+            setFormData({
+                name: '',
+                email: '',
+                question: ''
+            });
+
+            // Show success message
+            setIsSubmitted(true);
+            setIsSubmitting(false);
+
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                setIsSubmitted(false);
+            }, 5000);
+
+        } catch (error) {
+            console.error('Submission error:', error);
+            setIsSubmitting(false);
+            alert("There was an error submitting your question. Please try again.");
+        }
     };
 
     return (
@@ -81,6 +130,20 @@ export default function Faq() {
                                     Please ask a here and we'll be in touch soon.
                                 </p>
 
+                                {/* Success Message */}
+                                {isSubmitted && (
+                                    <div style={{
+                                        backgroundColor: '#d4edda',
+                                        border: '1px solid #c3e6cb',
+                                        borderRadius: '4px',
+                                        padding: '1rem',
+                                        marginBottom: '1.5rem',
+                                        color: '#155724'
+                                    }}>
+                                        Thank you for your question! We'll be in touch soon.
+                                    </div>
+                                )}
+
                                 {/* Contact Form */}
                                 <form onSubmit={handleSubmit} className="space-y-4">
                                     <div>
@@ -95,6 +158,7 @@ export default function Faq() {
                                             className="w-full px-4 py-3 border border-black rounded-xl focus:outline-none focus:ring-2 focus:ring-[#011e5b] focus:border-transparent bg-white"
                                             placeholder=""
                                             required
+                                            disabled={isSubmitting}
                                         />
                                     </div>
 
@@ -110,6 +174,7 @@ export default function Faq() {
                                             className="w-full px-4 py-3 border border-black rounded-xl focus:outline-none focus:ring-2 focus:ring-[#011e5b] focus:border-transparent bg-white"
                                             placeholder=""
                                             required
+                                            disabled={isSubmitting}
                                         />
                                     </div>
 
@@ -124,6 +189,7 @@ export default function Faq() {
                                             className="w-full px-4 py-3 border border-black rounded-xl focus:outline-none focus:ring-2 focus:ring-[#011e5b] focus:border-transparent min-h-[120px] bg-white"
                                             placeholder=""
                                             required
+                                            disabled={isSubmitting}
                                         />
                                     </div>
 
@@ -131,9 +197,10 @@ export default function Faq() {
                                     <div className="pt-4">
                                         <button
                                             type="submit"
-                                            className="w-full bg-[#004a80] text-white font-semibold py-3 px-6 rounded-md hover:bg-[#002f8c] transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#011e5b] focus:ring-offset-2"
+                                            disabled={isSubmitting}
+                                            className={`w-full bg-[#004a80] text-white font-semibold py-3 px-6 rounded-md hover:bg-[#002f8c] transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#011e5b] focus:ring-offset-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         >
-                                            SEND
+                                            {isSubmitting ? 'SENDING...' : 'SEND'}
                                         </button>
                                     </div>
                                 </form>

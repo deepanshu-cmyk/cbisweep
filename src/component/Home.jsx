@@ -138,7 +138,7 @@ export default function Home() {
 
                                 {/* Filter by Brand */}
                                 <div className="mb-3">
-                                    <h4 className="font-semibold text-gray-700 mb-3">Filter by Brand</h4>
+                                    <h4 className="font-semibold text-[#011e5b] mb-3">Filter by Brand</h4>
                                     <div className="relative">
                                         <select
                                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-[#f5fbff] text-[#0063aa]"
@@ -162,7 +162,7 @@ export default function Home() {
 
                                 {/* Filter by State */}
                                 <div className="mb-6">
-                                    <h4 className="font-semibold text-gray-700 mb-2">Filter by State</h4>
+                                    <h4 className="font-semibold text-[#011e5b] mb-2">Filter by State</h4>
                                     <div className="relative">
                                         <select
                                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-[#f5fbff] text-[#0063aa]"
@@ -211,7 +211,7 @@ export default function Home() {
                                 <button
                                     onClick={handleReset}
                                     disabled={isResetDisabled}
-                                    className={`w-full py-3 ${isResetDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#001E5B] hover:bg-[#003080]'} text-white font-medium rounded-lg transition-colors uppercase`}
+                                    className={`w-full py-3 ${isResetDisabled ? 'bg-[#001e5b] cursor-not-allowed' : 'bg-[#001E5B] hover:bg-[#003080]'} text-white font-medium rounded-lg transition-colors uppercase`}
                                 >
                                     Reset
                                 </button>
@@ -247,7 +247,7 @@ export default function Home() {
                                                         <img
                                                             src={promotion.image}
                                                             alt={promotion.title}
-                                                            className="w-full h-full object-cover"
+                                                            className="w-full h-full "
                                                         />
 
                                                     </div>
@@ -263,14 +263,16 @@ export default function Home() {
                                                     </div>
 
                                                     {/* Dates Section */}
-                                                    <div className="flex flex-col items-center gap-2 text-sm text-gray-600 mb-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <div>
-                                                                <b className='text-[#011e5b]'>From</b> {promotion.fromDate}
+                                                    <div className="flex flex-col items-center gap-2 text-sm text-gray-600 mb-4 mt-auto">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="text-center">
+                                                                <div><b className='text-[#011e5b]'>From</b></div>
+                                                                <div>{promotion.fromDate}</div>
                                                             </div>
-                                                            <span>-</span>
-                                                            <div>
-                                                                <b className='text-[#011e5b]'>To</b> {promotion.toDate}
+                                                            <span className="text-[#011e5b]">-</span>
+                                                            <div className="text-center">
+                                                                <div><b className='text-[#011e5b]'>To</b></div>
+                                                                <div>{promotion.toDate}</div>
                                                             </div>
                                                         </div>
                                                     </div>
