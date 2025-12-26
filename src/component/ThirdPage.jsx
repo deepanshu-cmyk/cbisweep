@@ -307,7 +307,7 @@ export default function ThirdPage() {
 
             {/* Main Content */}
             <h1 className="text-[22px] sm:text-[24px] md:text-[32px] lg:text-[40px] font-extrabold text-center text-[#011e5b] mb-0 pt-8 md:pt-12 lg:pt-18">
-                Premier Serve 2026 Sweepstakes
+                {promotion.title}
             </h1>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-24 py-8">
