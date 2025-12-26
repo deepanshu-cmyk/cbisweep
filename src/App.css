@@ -1,0 +1,5 @@
+:root {
+  --text-m: clamp(1.6rem, calc(0vw + 1.6rem), );
+  --text-xl: clamp(2.304rem, calc(0.6825vw + 2.0856rem), .55rem);
+
+}
