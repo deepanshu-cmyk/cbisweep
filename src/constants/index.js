@@ -49,11 +49,69 @@ Drink responsibly. Corona Premier® Beer. Imported by Crown Imports, Chicago, IL
 
 
 
+
+
 // All promotions data - 12 items total
 import coronaLogo from '../assets/logo-master-corona-white.webp';
 import pacificoLogo from '../assets/logo-pacifico-color.webp';
 import modeloLogo from '../assets/logo-modelo.webp';
 
+// Add state data and update promotions with state eligibility
+export const stateData = [
+    { value: "alabama", label: "Alabama", count: 6 },
+    { value: "alaska", label: "Alaska", count: 5 },
+    { value: "arizona", label: "Arizona", count: 6 },
+    { value: "arkansas", label: "Arkansas", count: 6 },
+    { value: "california", label: "California", count: 8 },
+    { value: "colorado", label: "Colorado", count: 6 },
+    { value: "connecticut", label: "Connecticut", count: 7 },
+    { value: "delaware", label: "Delaware", count: 7 },
+    { value: "district-of-columbia", label: "District of Columbia", count: 6 },
+    { value: "florida", label: "Florida", count: 7 },
+    { value: "georgia", label: "Georgia", count: 6 },
+    { value: "hawaii", label: "Hawaii", count: 5 },
+    { value: "idaho", label: "Idaho", count: 5 },
+    { value: "illinois", label: "Illinois", count: 6 },
+    { value: "indiana", label: "Indiana", count: 6 },
+    { value: "iowa", label: "Iowa", count: 6 },
+    { value: "kansas", label: "Kansas", count: 5 },
+    { value: "kentucky", label: "Kentucky", count: 6 },
+    { value: "louisiana", label: "Louisiana", count: 6 },
+    { value: "maine", label: "Maine", count: 6 },
+    { value: "maryland", label: "Maryland", count: 6 },
+    { value: "massachusetts", label: "Massachusetts", count: 7 },
+    { value: "michigan", label: "Michigan", count: 6 },
+    { value: "minnesota", label: "Minnesota", count: 5 },
+    { value: "mississippi", label: "Mississippi", count: 6 },
+    { value: "missouri", label: "Missouri", count: 6 },
+    { value: "montana", label: "Montana", count: 5 },
+    { value: "nebraska", label: "Nebraska", count: 6 },
+    { value: "nevada", label: "Nevada", count: 6 },
+    { value: "new-hampshire", label: "New Hampshire", count: 7 },
+    { value: "new-jersey", label: "New Jersey", count: 7 },
+    { value: "new-mexico", label: "New Mexico", count: 6 },
+    { value: "new-york", label: "New York", count: 7 },
+    { value: "north-carolina", label: "North Carolina", count: 6 },
+    { value: "north-dakota", label: "North Dakota", count: 5 },
+    { value: "ohio", label: "Ohio", count: 6 },
+    { value: "oklahoma", label: "Oklahoma", count: 6 },
+    { value: "oregon", label: "Oregon", count: 6 },
+    { value: "pennsylvania", label: "Pennsylvania", count: 8 },
+    { value: "rhode-island", label: "Rhode Island", count: 7 },
+    { value: "south-carolina", label: "South Carolina", count: 6 },
+    { value: "south-dakota", label: "South Dakota", count: 5 },
+    { value: "tennessee", label: "Tennessee", count: 6 },
+    { value: "texas", label: "Texas", count: 6 },
+    { value: "utah", label: "Utah", count: 6 },
+    { value: "vermont", label: "Vermont", count: 7 },
+    { value: "virginia", label: "Virginia", count: 6 },
+    { value: "washington", label: "Washington", count: 5 },
+    { value: "west-virginia", label: "West Virginia", count: 6 },
+    { value: "wisconsin", label: "Wisconsin", count: 6 },
+    { value: "wyoming", label: "Wyoming", count: 5 }
+];
+
+// Update allPromotions with state eligibility
 export const allPromotions = [
     {
         id: 1,
@@ -65,19 +123,23 @@ export const allPromotions = [
         image: "https://cdn.shortpixel.ai/spai/ret_img/cbisweeps.com/wp-content/uploads/2025/12/FF—2796-Corona-Premier-x-BNP-2026-hero.webp?t=1766467401",
         link: "https://cbisweeps.com/premierserve2026sweepstakes/",
         brandLogo: coronaLogo,
-        register: "Corona Extra®"
+        register: "Corona Extra®",
+        // Add state eligibility - EXAMPLE: only available in California
+        eligibleStates: ["california"]
     },
     {
         id: 2,
         title: "The Pacifico Winter Gear Sweepstakes",
-        description: "Enter for Your Chance to Win ",
+        description: "Enter for Your Chance to Win",
         brand: "pacifico",
         fromDate: "12/01/2025",
         toDate: "01/31/2026",
         image: "https://cdn.shortpixel.ai/spai/ret_img/cbisweeps.com/wp-content/uploads/2025/11/FF—2800-WBU-Pacifico-Winter-Gear-Sweeps-hero.webp",
         link: "https://cbisweeps.com/pacwintergear/",
         brandLogo: pacificoLogo,
-        register: "Pacifico Clara®"
+        register: "Pacifico Clara®",
+        // EXAMPLE: Available in multiple states
+        eligibleStates: ["alabama", "alaska", "arizona", "california", "colorado"]
     },
     {
         id: 3,
@@ -89,7 +151,9 @@ export const allPromotions = [
         image: "https://cdn.shortpixel.ai/spai/ret_img/cbisweeps.com/wp-content/uploads/2025/11/FF—2803-Corona-Premier-Josh-Allen-Autographed-Football-Sweeps-hero.webp",
         link: "https://cbisweeps.com/coronajoshallenfootball/",
         brandLogo: coronaLogo,
-        register: "Corona Premier®"
+        register: "Corona Premier®",
+        // EXAMPLE: Available in all states except some
+        eligibleStates: stateData.map(state => state.value).filter(state => !["california", "new-york"].includes(state))
     },
     {
         id: 4,
@@ -101,7 +165,8 @@ export const allPromotions = [
         image: "https://cdn.shortpixel.ai/spai/ret_img/cbisweeps.com/wp-content/uploads/2025/11/FF—2808-Coronita-Cooler-Party-hero.webp",
         link: "https://cbisweeps.com/coronitacoolerparty/",
         brandLogo: coronaLogo,
-        register: "Coronita Extra®"
+        register: "Coronita Extra®",
+        eligibleStates: ["alabama", "georgia", "florida", "texas", "louisiana"]
     },
     {
         id: 5,
@@ -113,7 +178,8 @@ export const allPromotions = [
         image: "https://cdn.shortpixel.ai/spai/ret_img/cbisweeps.com/wp-content/uploads/2025/10/FF—2780-Corona-x-Tampa-Bay-Lightning-hero.webp",
         link: "https://cbisweeps.com/coronalightning2025/",
         brandLogo: coronaLogo,
-        register: "Corona Extra®"
+        register: "Corona Extra®",
+        eligibleStates: ["florida", "georgia", "alabama", "south-carolina"]
     },
     {
         id: 6,
@@ -125,7 +191,8 @@ export const allPromotions = [
         image: "https://cdn.shortpixel.ai/spai/ret_img/cbisweeps.com/wp-content/uploads/2025/10/FF—2758-Modelo-Holiday-hero.webp",
         link: "https://cbisweeps.com/modeloholiday/",
         brandLogo: modeloLogo,
-        register: "Modelo Especial®"
+        register: "Modelo Especial®",
+        eligibleStates: stateData.map(state => state.value) // Available in all states
     },
     {
         id: 7,
@@ -137,7 +204,8 @@ export const allPromotions = [
         image: "https://cdn.shortpixel.ai/spai/ret_img/cbisweeps.com/wp-content/uploads/2025/10/FF—2758-Modelo-Football-hero.webp",
         link: "https://cbisweeps.com/modelofootball/",
         brandLogo: modeloLogo,
-        register: "Modelo Especial®"
+        register: "Modelo Especial®",
+        eligibleStates: stateData.map(state => state.value) // Available in all states
     },
     {
         id: 8,
@@ -149,7 +217,8 @@ export const allPromotions = [
         image: "https://cdn.shortpixel.ai/spai/ret_img/cbisweeps.com/wp-content/uploads/2025/10/FF—2758-Pacifico-hero.webp",
         link: "https://cbisweeps.com/pacificoholiday/",
         brandLogo: pacificoLogo,
-        register: "Pacifico Clara®"
+        register: "Pacifico Clara®",
+        eligibleStates: ["california", "washington", "oregon", "nevada", "arizona"]
     },
     {
         id: 9,
@@ -161,7 +230,8 @@ export const allPromotions = [
         image: "https://cdn.shortpixel.ai/spai/ret_img/cbisweeps.com/wp-content/uploads/2025/10/FF—2758-Corona-hero.webp",
         link: "https://cbisweeps.com/coronaholiday/",
         brandLogo: coronaLogo,
-        register: "Corona Extra®"
+        register: "Corona Extra®",
+        eligibleStates: stateData.map(state => state.value) // Available in all states
     },
     {
         id: 10,
@@ -173,7 +243,8 @@ export const allPromotions = [
         image: "https://cdn.shortpixel.ai/spai/ret_img/cbisweeps.com/wp-content/uploads/2025/08/FF—2726-Pacifico-x-Chargers-Custom-Jersey-Sweepstakes-hero.webp",
         link: "https://cbisweeps.com/2025pacificolacjerseysweeps/",
         brandLogo: pacificoLogo,
-        register: "Pacifico Clara®"
+        register: "Pacifico Clara®",
+        eligibleStates: ["california", "nevada", "arizona"]
     },
     {
         id: 11,
@@ -185,7 +256,8 @@ export const allPromotions = [
         image: "https://cdn.shortpixel.ai/spai/ret_img/cbisweeps.com/wp-content/uploads/2025/07/FF—2711-Corona-Premier-x-Golf-hero.webp",
         link: "https://cbisweeps.com/premier-golf-2025/",
         brandLogo: coronaLogo,
-        register: "Corona Premier®"
+        register: "Corona Premier®",
+        eligibleStates: stateData.map(state => state.value) // Available in all states
     },
     {
         id: 12,
@@ -197,7 +269,8 @@ export const allPromotions = [
         image: "https://cdn.shortpixel.ai/spai/ret_img/cbisweeps.com/wp-content/uploads/2025/02/FF—2585-Pacifico-x-Adventure-2025-hero.webp",
         link: "https://cbisweeps.com/pacificoadventure2025/",
         brandLogo: pacificoLogo,
-        register: "Pacifico Clara®"
+        register: "Pacifico Clara®",
+        eligibleStates: ["california", "oregon", "washington", "colorado", "utah"]
     }
 ];
 

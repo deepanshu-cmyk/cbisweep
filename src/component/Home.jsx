@@ -1,33 +1,114 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import logoImage from '../assets/logo-constellation-brands.svg';
 import lowerImage from '../assets/img-hero-1-scaled.webp';
 import { Link } from 'react-router-dom';
-import { allPromotions } from '../constants';
+import { allPromotions, stateData } from '../constants';
 import logoOptivate from '../assets/logo-optivate.webp';
 
 export default function Home() {
-
-
     // Filter and sort states
     const [brandFilter, setBrandFilter] = useState("");
     const [stateFilter, setStateFilter] = useState("");
     const [sortOption, setSortOption] = useState("");
     const [visibleCount, setVisibleCount] = useState(6);
     const [filteredPromotions, setFilteredPromotions] = useState(allPromotions);
+    const [stateOptions, setStateOptions] = useState([]);
+    const [brandOptions, setBrandOptions] = useState([]);
 
-    // Filter options
-    const brandOptions = [
-        { value: "corona", label: "Corona (6)" },
-        { value: "modelo", label: "Modelo (2)" },
-        { value: "pacifico", label: "Pacifico (4)" }
-    ];
+    // Calculate brand options based on current filters
+    const calculateBrandOptions = (stateValue = '') => {
+        let filtered = allPromotions;
 
-    const sortOptions = [
-        { value: "newest", label: "Newest" },
-        { value: "oldest", label: "Oldest" },
-        { value: "title_asc", label: "Sort A-Z" },
-        { value: "title_desc", label: "Sort Z-A" }
-    ];
+        // Filter by state if provided
+        if (stateValue) {
+            filtered = filtered.filter(promo =>
+                promo.eligibleStates && promo.eligibleStates.includes(stateValue)
+            );
+        }
+
+        // Count promotions per brand
+        const brandCounts = {};
+        filtered.forEach(promo => {
+            brandCounts[promo.brand] = (brandCounts[promo.brand] || 0) + 1;
+        });
+
+        // Create brand options array
+        const allBrands = [...new Set(allPromotions.map(p => p.brand))];
+        return allBrands.map(brand => {
+            const displayName = brand === 'corona' ? 'Corona' :
+                brand === 'modelo' ? 'Modelo' :
+                    brand === 'pacifico' ? 'Pacifico' : brand;
+            return {
+                value: brand,
+                label: `${displayName} (${brandCounts[brand] || 0})`,
+                count: brandCounts[brand] || 0
+            };
+        });
+    };
+
+    // Calculate state options based on current filters
+    const calculateStateOptions = (brandValue = '') => {
+        let filtered = allPromotions;
+
+        // Filter by brand if provided
+        if (brandValue) {
+            filtered = filtered.filter(promo => promo.brand === brandValue);
+        }
+
+        // Count promotions per state
+        const stateCounts = {};
+        filtered.forEach(promo => {
+            if (promo.eligibleStates) {
+                promo.eligibleStates.forEach(state => {
+                    stateCounts[state] = (stateCounts[state] || 0) + 1;
+                });
+            }
+        });
+
+        // Create state options array with all 51 states
+        return stateData.map(state => ({
+            ...state,
+            count: stateCounts[state.value] || 0,
+            label: `${state.label} (${stateCounts[state.value] || 0})`
+        }));
+    };
+
+    // Initialize options
+    useEffect(() => {
+        const initialBrandOptions = calculateBrandOptions();
+        const initialStateOptions = calculateStateOptions();
+
+        setBrandOptions(initialBrandOptions);
+        setStateOptions(initialStateOptions);
+    }, []);
+
+    // Update state options when brand filter changes
+    useEffect(() => {
+        const updatedStateOptions = calculateStateOptions(brandFilter);
+        setStateOptions(updatedStateOptions);
+
+        // Clear state selection if the selected state has 0 count for the selected brand
+        if (stateFilter && brandFilter) {
+            const selectedStateData = updatedStateOptions.find(s => s.value === stateFilter);
+            if (!selectedStateData || selectedStateData.count === 0) {
+                setStateFilter("");
+            }
+        }
+    }, [brandFilter]);
+
+    // Update brand options when state filter changes
+    useEffect(() => {
+        const updatedBrandOptions = calculateBrandOptions(stateFilter);
+        setBrandOptions(updatedBrandOptions);
+
+        // Clear brand selection if the selected brand has 0 count for the selected state
+        if (brandFilter && stateFilter) {
+            const selectedBrandData = updatedBrandOptions.find(b => b.value === brandFilter);
+            if (!selectedBrandData || selectedBrandData.count === 0) {
+                setBrandFilter("");
+            }
+        }
+    }, [stateFilter]);
 
     // Apply filters and sort
     useEffect(() => {
@@ -38,10 +119,11 @@ export default function Home() {
             result = result.filter(promo => promo.brand === brandFilter);
         }
 
-        // Apply state filter (simplified - just showing functionality)
+        // Apply state filter
         if (stateFilter) {
-            // For demo purposes, filter by brand if state is selected
-            result = result.filter(promo => promo.brand === "corona");
+            result = result.filter(promo =>
+                promo.eligibleStates && promo.eligibleStates.includes(stateFilter)
+            );
         }
 
         // Apply sorting
@@ -65,7 +147,7 @@ export default function Home() {
         }
 
         setFilteredPromotions(result);
-        setVisibleCount(6); // Reset visible count when filters change
+        setVisibleCount(6);
     }, [brandFilter, stateFilter, sortOption]);
 
     // Get visible promotions
@@ -81,14 +163,22 @@ export default function Home() {
         setStateFilter("");
         setSortOption("");
         setVisibleCount(6);
+
+        // Reset to all data
+        setBrandOptions(calculateBrandOptions());
+        setStateOptions(calculateStateOptions());
     };
 
     const handleBrandChange = (e) => {
-        setBrandFilter(e.target.value);
+        const brand = e.target.value;
+        setBrandFilter(brand);
+        setVisibleCount(6);
     };
 
     const handleStateChange = (e) => {
-        setStateFilter(e.target.value);
+        const state = e.target.value;
+        setStateFilter(state);
+        setVisibleCount(6);
     };
 
     const handleSortChange = (e) => {
@@ -97,6 +187,33 @@ export default function Home() {
 
     // Check if reset button should be disabled
     const isResetDisabled = !brandFilter && !stateFilter && !sortOption;
+
+    // Get promotion states for display
+    const getPromotionStates = (promotion) => {
+        if (!promotion.eligibleStates || promotion.eligibleStates.length === 0) {
+            return "Not available in any state";
+        }
+
+        if (promotion.eligibleStates.length === stateData.length) {
+            return "Available in all states";
+        }
+
+        if (promotion.eligibleStates.length <= 3) {
+            return `Available in: ${promotion.eligibleStates
+                .map(state => stateData.find(s => s.value === state)?.label || state)
+                .join(", ")}`;
+        }
+
+        return `Available in ${promotion.eligibleStates.length} states`;
+    };
+
+    // Sort options
+    const sortOptions = [
+        { value: "newest", label: "Newest" },
+        { value: "oldest", label: "Oldest" },
+        { value: "title_asc", label: "Sort A-Z" },
+        { value: "title_desc", label: "Sort Z-A" }
+    ];
 
     return (
         <div className="min-h-screen bg-white">
@@ -109,7 +226,7 @@ export default function Home() {
                 />
             </div>
 
-            {/* Lower image section - RESPONSIVE */}
+            {/* Lower image section */}
             <div className="w-full">
                 <div className="">
                     <img
@@ -130,10 +247,10 @@ export default function Home() {
                         <p className="text-[24px] font-bold text-[#011e5b]">GOOD LUCK!</p>
                     </div>
 
-                    <div className="flex flex-col lg:flex-row gap-8 pt-10 mb-10 ">
+                    <div className="flex flex-col lg:flex-row gap-8 pt-10 mb-10">
                         {/* Sidebar - Filters - Sticky */}
                         <div className="lg:w-1/4">
-                            <div className="sticky top-6 bg-white rounded-lg shadow-md p-6 ">
+                            <div className="sticky top-6 bg-white rounded-lg shadow-md p-6">
                                 <h2 className="text-[24px] font-bold text-[#011e5b] mb-6 uppercase">Filter</h2>
 
                                 {/* Filter by Brand */}
@@ -147,7 +264,12 @@ export default function Home() {
                                         >
                                             <option value="">Choose...</option>
                                             {brandOptions.map((option) => (
-                                                <option key={option.value} value={option.value}>
+                                                <option
+                                                    key={option.value}
+                                                    value={option.value}
+                                                    disabled={option.count === 0}
+                                                    className={option.count === 0 ? "text-gray-400" : ""}
+                                                >
                                                     {option.label}
                                                 </option>
                                             ))}
@@ -158,6 +280,11 @@ export default function Home() {
                                             </svg>
                                         </div>
                                     </div>
+                                    {stateFilter && (
+                                        <p className="mt-1 text-xs text-gray-500">
+                                            Showing brands available in {stateData.find(s => s.value === stateFilter)?.label}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Filter by State */}
@@ -168,12 +295,19 @@ export default function Home() {
                                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-[#f5fbff] text-[#0063aa]"
                                             value={stateFilter}
                                             onChange={handleStateChange}
+                                            disabled={!stateOptions.length}
                                         >
                                             <option value="">Choose...</option>
-                                            <option value="alabama">Alabama (6)</option>
-                                            <option value="california">California (8)</option>
-                                            <option value="new-york">New York (7)</option>
-                                            <option value="texas">Texas (6)</option>
+                                            {stateOptions.map((state) => (
+                                                <option
+                                                    key={state.value}
+                                                    value={state.value}
+                                                    disabled={state.count === 0}
+                                                    className={state.count === 0 ? "text-gray-400" : ""}
+                                                >
+                                                    {state.label}
+                                                </option>
+                                            ))}
                                         </select>
                                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                             <svg className="w-5 h-5 text-[#0063aa]" fill="currentColor" viewBox="0 0 20 20">
@@ -181,10 +315,17 @@ export default function Home() {
                                             </svg>
                                         </div>
                                     </div>
+                                    {brandFilter && (
+                                        <p className="mt-1 text-xs text-gray-500">
+                                            Showing states where {brandFilter === 'corona' ? 'Corona' :
+                                                brandFilter === 'modelo' ? 'Modelo' :
+                                                    'Pacifico'} has promotions
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Sort */}
-                                <div className="mb-3 ">
+                                <div className="mb-3">
                                     <h2 className="text-[24px] font-bold text-[#011e5b] mb-3 uppercase">Sort</h2>
                                     <div className="relative">
                                         <select
@@ -192,7 +333,7 @@ export default function Home() {
                                             value={sortOption}
                                             onChange={handleSortChange}
                                         >
-                                            <option value="" className=''>Sort by...</option>
+                                            <option value="">Sort by...</option>
                                             {sortOptions.map((option) => (
                                                 <option key={option.value} value={option.value}>
                                                     {option.label}
@@ -220,12 +361,14 @@ export default function Home() {
 
                         {/* Main Content - Promotions Grid */}
                         <div className="lg:w-3/4">
+
+
                             {filteredPromotions.length === 0 ? (
-                                <div className="text-center py-12">
-                                    <p className="text-lg text-gray-600">No promotions found matching your filters.</p>
+                                <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                                    <p className="text-lg text-gray-600 mb-4">No promotions found matching your filters.</p>
                                     <button
                                         onClick={handleReset}
-                                        className="mt-4 px-6 py-2 bg-[#001E5B] text-white font-medium rounded-lg hover:bg-[#003080] transition-colors"
+                                        className="px-6 py-2 bg-[#001E5B] text-white font-medium rounded-lg hover:bg-[#003080] transition-colors"
                                     >
                                         Reset Filters
                                     </button>
@@ -236,24 +379,21 @@ export default function Home() {
                                         {promotions.map((promotion) => (
                                             <li key={promotion.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
                                                 {/* Image Section */}
-
                                                 <figure className="relative h-80 overflow-hidden flex items-center justify-center">
                                                     <img
                                                         src={promotion.image}
                                                         alt={promotion.title}
                                                         className="w-full h-full object-cover blur-sm"
                                                     />
-                                                    <div className="absolute top-0 h-full px-6 overflow-hidden z-2 ">
+                                                    <div className="absolute top-0 h-full px-6 overflow-hidden z-2">
                                                         <img
                                                             src={promotion.image}
                                                             alt={promotion.title}
-                                                            className="w-full h-full "
+                                                            className="w-full h-full"
                                                         />
-
                                                     </div>
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
                                                 </figure>
-
 
                                                 {/* Content Section */}
                                                 <div className="p-6 flex flex-col grow justify-center">
@@ -261,6 +401,13 @@ export default function Home() {
                                                         <p className="text-[#011e5b] text-sm mb-2">{promotion.description}</p>
                                                         <h2 className="text-[20px] font-bold text-[#011e5b] line-clamp-2">{promotion.title}</h2>
                                                     </div>
+
+                                                    {/* State availability badge */}
+                                                    {/* <div className="mb-4 text-center">
+                                                        <span className="inline-block px-3 py-1 text-xs font-semibold bg-[#f0f8ff] text-[#0063aa] rounded-full">
+                                                            {getPromotionStates(promotion)}
+                                                        </span>
+                                                    </div> */}
 
                                                     {/* Dates Section */}
                                                     <div className="flex flex-col items-center gap-2 text-sm text-gray-600 mb-4 mt-auto">
@@ -277,7 +424,7 @@ export default function Home() {
                                                         </div>
                                                     </div>
 
-                                                    {/* Enter Button - Separate Div */}
+                                                    {/* Enter Button */}
                                                     <div className="text-center mt-auto">
                                                         <Link
                                                             to={`/sweepstakes/${promotion.id}`}
@@ -367,8 +514,6 @@ export default function Home() {
                                         FAQs
                                     </a>
                                 </div>
-
-
                             </div>
 
                             {/* Drink Responsibly */}
@@ -376,8 +521,6 @@ export default function Home() {
 
                             {/* Copyright */}
                             <p className="text-sm mb-8">© 2025 Constellation Brands, All Rights Reserved</p>
-
-
                         </div>
                     </div>
                 </div>
@@ -393,7 +536,6 @@ export default function Home() {
                     />
                 </div>
             </div>
-
         </div>
     );
 }
